@@ -30,7 +30,7 @@
         const canvasRect = canvas.getBoundingClientRect();
         const offscreenCanvas = canvas.transferControlToOffscreen();
         
-        const w = new Worker("worker.js");
+        const w = new Worker("./workers/worker.js");
         w.postMessage({ canvas: offscreenCanvas }, [offscreenCanvas]);
 
         canvas.addEventListener('mousemove', (e) => {

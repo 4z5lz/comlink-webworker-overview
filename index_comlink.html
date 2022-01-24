@@ -33,7 +33,7 @@
         // import Comlink
         import * as Comlink from "https://unpkg.com/comlink/dist/esm/comlink.mjs";
 
-        const w = new Worker("worker_comlink.js");
+        const w = new Worker("./workers/worker_comlink.js");
         const comlink_worker = Comlink.wrap(w);
 
         comlink_worker.init(Comlink.transfer(offscreenCanvas, [offscreenCanvas]));
