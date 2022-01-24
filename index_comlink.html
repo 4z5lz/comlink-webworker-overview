@@ -6,36 +6,56 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Comlink</title>
+
+    <style>
+        canvas {
+            border: 1px solid grey;
+        }
+    </style>
 </head>
 
 <body>
 
     <h1>Comlink example</h1>
+
+    <canvas id="canvas"></canvas>
     
-    <output id="comlink"></output>
+    <p id="output"></p>
 
     <script type="module">
+        const canvas = document.getElementById("canvas");
+        canvas.width = 500;
+        canvas.height = 500;
+
+        const canvasRect = canvas.getBoundingClientRect();
+        const offscreenCanvas = canvas.transferControlToOffscreen();
+
+        // import Comlink
         import * as Comlink from "https://unpkg.com/comlink/dist/esm/comlink.mjs";
 
         const w = new Worker("worker_comlink.js");
         const comlink_worker = Comlink.wrap(w);
 
-        document.onmousemove = (e) => {
-            comlink_worker.handleMousePosition({ clientX: e.clientX, clientY: e.clientY }, Comlink.proxy(callbackPosition))
-        }
+        comlink_worker.init(Comlink.transfer(offscreenCanvas, [offscreenCanvas]));
 
-        document.onclick = (e) => {
-            comlink_worker.handleMouseClick({ clientX: e.clientX, clientY: e.clientY }, Comlink.proxy(callbackClick))
-        }
-
-        function callbackPosition(data) {
-            document.getElementById("comlink").innerHTML = 'Position: ' + data.payload.clientX + 'x' + data.payload.clientY
-        }
+        canvas.addEventListener('mousemove', (e) => {
+            // call draw() method in the worker 
+            comlink_worker.draw({ x: e.clientX - canvasRect.left, y: e.clientY - canvasRect.top }, Comlink.proxy(callback))
+        });
         
-        function callbackClick(data) {
-            document.getElementById("comlink").innerHTML = '<strong>Click: ' + data.payload.clientX + 'x' + data.payload.clientY + '</strong>'
+        const callback = (payload) => {
+            document.getElementById("output").innerHTML = 'Drawing: ' + payload.x + 'x' + payload.y;
         }
 
+        canvas.addEventListener('click', function(e) {
+            // call cleanup() method in the worker and receive output
+            const isClean = comlink_worker.cleanup();
+            
+            if(isClean) {
+                document.getElementById("output").innerHTML = '<strong>Start from scratch!</strong>';
+            }
+        });
+        
     </script>
 
     <p>

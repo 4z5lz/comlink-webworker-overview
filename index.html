@@ -6,40 +6,60 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WebWorker</title>
+
+    <style>
+        canvas {
+            border: 1px solid grey;
+        }
+    </style>
 </head>
 
 <body>
 
     <h1>WebWorker example</h1>
-    <output id="webworker"></output>
+    
+    <canvas id="canvas"></canvas>
+    
+    <p id="output"></p>
 
     <script>
+        const canvas = document.getElementById("canvas");
+        canvas.width = 500;
+        canvas.height = 500;
 
+        const canvasRect = canvas.getBoundingClientRect();
+        const offscreenCanvas = canvas.transferControlToOffscreen();
+        
         const w = new Worker("worker.js");
+        w.postMessage({ canvas: offscreenCanvas }, [offscreenCanvas]);
 
-        document.onmousemove = (e) => {
-            w.postMessage({ action: 'handleMousePosition', payload: { clientX: e.clientX, clientY: e.clientY } })
-        }
+        canvas.addEventListener('mousemove', (e) => {
+            // send message TO the worker
+            w.postMessage({ action: 'draw', payload: { x: e.clientX - canvasRect.left, y: e.clientY - canvasRect.top } })
+        })
+                
+        canvas.addEventListener('click', function(e) {
+            // send message TO the worker
+            w.postMessage({ action: 'cleanup' })
+        });
 
-        document.onclick = (e) => {
-            w.postMessage({ action: 'handleMouseClick', payload: { clientX: e.clientX, clientY: e.clientY } })
-        }
-
+        // handle messages FROM the worker
         w.onmessage = function (message) {
             const { processed, payload } = message.data;
 
             let output;
             switch (processed) {
-                case 'position':
-                    output = 'Position: ' + payload.clientX + 'x' + payload.clientY
+                case 'drawing':
+                    document.getElementById("output").innerHTML = 'Drawing: ' + payload.x + 'x' + payload.y;
                     break;
-
-                case 'click':
-                    output = '<strong>Click: ' + payload.clientX + 'x' + payload.clientY + '</strong>'
+                
+                case 'cleanup':
+                    if (payload) {
+                        document.getElementById("output").innerHTML = '<strong>Start from scratch!</strong>';
+                    }
                     break;
             }
 
-            document.getElementById("webworker").innerHTML = output;
         };        
     </script>
 
