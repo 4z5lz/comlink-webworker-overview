@@ -10,8 +10,7 @@ self.addEventListener("message", message => {
 
     if (canvas) {
         canvasWidth = canvas.width; 
-        canvasHeight = canvas.height;
-        
+        canvasHeight = canvas.height;        
         ctx = canvas.getContext("2d");        
     }
     

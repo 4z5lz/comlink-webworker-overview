@@ -40,13 +40,9 @@
 
         canvas.addEventListener('mousemove', (e) => {
             // call draw() method in the worker 
-            comlink_worker.draw({ x: e.clientX - canvasRect.left, y: e.clientY - canvasRect.top }, Comlink.proxy(callback))
+            comlink_worker.draw({ x: e.clientX - canvasRect.left, y: e.clientY - canvasRect.top }, Comlink.proxy(drawCallback))
         });
         
-        const callback = (payload) => {
-            document.getElementById("output").innerHTML = 'Drawing: ' + payload.x + 'x' + payload.y;
-        }
-
         canvas.addEventListener('click', function(e) {
             // call cleanup() method in the worker and receive output
             const isClean = comlink_worker.cleanup();
@@ -55,6 +51,10 @@
                 document.getElementById("output").innerHTML = '<strong>Start from scratch!</strong>';
             }
         });
+
+        const drawCallback = (payload) => {
+            document.getElementById("output").innerHTML = 'Drawing: ' + payload.x + 'x' + payload.y;
+        }
         
     </script>
 
