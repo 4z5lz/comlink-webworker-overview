@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebWorker</title>
+</head>
+
+<body>
+
+    <h1>WebWorker example</h1>
+    <output id="webworker"></output>
+
+    <script>
+
+        const w = new Worker("worker.js");
+
+        document.onmousemove = (e) => {
+            w.postMessage({ action: 'handleMousePosition', payload: { clientX: e.clientX, clientY: e.clientY } })
+        }
+
+        document.onclick = (e) => {
+            w.postMessage({ action: 'handleMouseClick', payload: { clientX: e.clientX, clientY: e.clientY } })
+        }
+
+        w.onmessage = function (message) {
+            const { processed, payload } = message.data;
+
+            let output;
+            switch (processed) {
+                case 'position':
+                    output = 'Position: ' + payload.clientX + 'x' + payload.clientY
+                    break;
+
+                case 'click':
+                    output = '<strong>Click: ' + payload.clientX + 'x' + payload.clientY + '</strong>'
+                    break;
+            }
+
+            document.getElementById("webworker").innerHTML = output;
+        };        
+    </script>
+
+    <p>
+        <a href="./index_comlink.html">Comlink example</a>
+    </p>
+
+</body>
+
+</html>
