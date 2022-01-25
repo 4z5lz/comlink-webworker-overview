@@ -34,18 +34,18 @@
         import * as Comlink from "https://unpkg.com/comlink/dist/esm/comlink.mjs";
 
         const w = new Worker("./workers/worker_comlink.js");
-        const comlink_worker = Comlink.wrap(w);
+        const comlinkWorker = Comlink.wrap(w);
 
-        comlink_worker.init(Comlink.transfer(offscreenCanvas, [offscreenCanvas]));
+        comlinkWorker.init(Comlink.transfer(offscreenCanvas, [offscreenCanvas]));
 
         canvas.addEventListener('mousemove', (e) => {
             // call draw() method in the worker 
-            comlink_worker.draw({ x: e.clientX - canvasRect.left, y: e.clientY - canvasRect.top }, Comlink.proxy(drawCallback))
+            comlinkWorker.draw({ x: e.clientX - canvasRect.left, y: e.clientY - canvasRect.top }, Comlink.proxy(drawCallback))
         });
         
         canvas.addEventListener('click', function(e) {
             // call cleanup() method in the worker and receive output
-            const isClean = comlink_worker.cleanup();
+            const isClean = comlinkWorker.cleanup();
             
             if(isClean) {
                 document.getElementById("output").innerHTML = '<strong>Start from scratch!</strong>';
